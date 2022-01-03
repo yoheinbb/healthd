@@ -1,0 +1,6 @@
+{
+    "port": "80",
+    "urlpath": "healthcheck",
+    "ret_success": "SUCCESS",
+    "ret_failed": "FAILED"
+}
