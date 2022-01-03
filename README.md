@@ -29,8 +29,10 @@ REST APIへのアクセスとScriptの実行は非同期になっています。
 
 ## Library
 
+```
 github.com/ant0ine/go-json-rest/rest
 gopkg.in/natefinch/lumberjack.v2
+```
 
 ## build
 
