@@ -2,10 +2,10 @@
 
 ## description
 
-スクリプトを定期実行。
-簡易なHTTPServerを起動し、
-指定URLにアクセスすることでスクリプトのstatus codeに応じ、
-結果をJSON形式で返却
+スクリプトを定期実行。  
+簡易なHTTPServerを起動し、  
+指定URLにアクセスすることでスクリプトのstatus codeに応じ、  
+結果をJSON形式で返却  
 
 http://[server]:8080/healthcheck
 
@@ -43,6 +43,14 @@ go build
 ```
 ./healthd [-global-config=conf/global.json -script-config=conf/script.json]
 ```
+引数指定無しの場合は、下記configがデフォルトで読み込まれます。
+
+
+```
+conf/global.json
+conf/script.json
+```
+
 
 ## config/global.json
 
@@ -59,9 +67,9 @@ go build
 
 ```
 {
-  "id": "mysql",
-  "name": "mysql",
-  "script": "/usr/local/bin/check_mysql_status",
+  "id": "sample",
+  "name": "sample",
+  "script": "scripts/sample_script",
   "maintenance_file": "/tmp/maintenance",
   "interval": "10s",
   "timeout": "10s"
