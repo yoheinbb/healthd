@@ -46,7 +46,7 @@ func main() {
         fmt.Print(err)
         os.Exit(1)
     }
-    fmt.Println("GlobalConfigFile Setting")
+    fmt.Println("GlobalConfig Setting")
     fmt.Println("  Port        : " + gconfig.Port)
     fmt.Println("  URLPath     : " + gconfig.URLPath)
 
@@ -57,7 +57,7 @@ func main() {
         os.Exit(1)
     }
 
-    fmt.Println("ConfigFile Setting")
+    fmt.Println("ScriptConfig Setting")
     fmt.Println("  Script          : " + config.Script)
     fmt.Println("  MaintenanceFile : " + config.MaintenanceFile)
     fmt.Println("  CheckInterval   : " +  config.Interval)
@@ -77,6 +77,8 @@ func main() {
 
     // Statusを返却するHttpServerの起動
     hs := util.NewHttpServer(ss, gconfig)
+
+    fmt.Println("exec curl from other console:  `curl localhost" + gconfig.Port  + gconfig.URLPath+"`")
     hs.Start()
 
 }

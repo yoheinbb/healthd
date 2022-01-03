@@ -4,7 +4,6 @@ import (
     "github.com/ant0ine/go-json-rest/rest"
     "log"
     "net/http"
-    "fmt"
 )
 
 // 出力の定義
@@ -44,7 +43,6 @@ func (self *HttpServer) Start() {
 }
 
 func NewHttpServer(ss *ServiceStatus, gconfig *GlobalConfig) *HttpServer {
-    fmt.Println(gconfig.URLPath)
 
     return &HttpServer{ Status: ss, URLPath: gconfig.URLPath, Port: gconfig.Port }
 }
