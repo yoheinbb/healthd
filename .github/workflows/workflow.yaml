@@ -1,0 +1,14 @@
+on: [push]
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v4
+        with: 
+          go-version-file: go.mod
+          cache-dependency-path: go.sum
+      - run: make image
+      - name: Run test
+        run: make e2e
+

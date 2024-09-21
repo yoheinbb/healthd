@@ -2,13 +2,14 @@ package main
 
 import (
 	"fmt"
-	"gopkg.in/natefinch/lumberjack.v2"
 	"healthd/util"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 func main() {
@@ -92,6 +93,7 @@ func getStatus(ss *util.ServiceStatus, config *util.ScriptConfig) {
 	statusCode, err := util.ExecCommand(script, cmdTimeout)
 	if err != nil {
 		fmt.Printf("%s", err)
+		log.Printf("%s", err)
 	}
 
 	if checkFileStatus(maintenance_file) {
