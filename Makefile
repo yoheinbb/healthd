@@ -13,3 +13,7 @@ image:
 .PHONY: e2e
 e2e:
 	cd e2e;go run github.com/onsi/ginkgo/v2/ginkgo -v
+
+.PHONY: lint
+lint:
+	golangci-lint run

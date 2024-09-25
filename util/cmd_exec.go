@@ -17,7 +17,7 @@ func runCommand(cmd *exec.Cmd) (<-chan int, error) {
 	statusChan := make(chan int)
 	go func(cmd *exec.Cmd) {
 		err = cmd.Wait()
-		statusCode := 1
+		var statusCode int
 		if err != nil {
 			if exitError, ok := err.(*exec.ExitError); ok {
 				if exitStatus, ok := exitError.Sys().(syscall.WaitStatus); ok {
@@ -52,7 +52,9 @@ LOOP:
 			break LOOP
 		case <-timeout:
 			err = errors.New(script + " timeout!! kill process")
-			cmd.Process.Kill()
+			if innerErr := cmd.Process.Kill(); innerErr != nil {
+				err = errors.Join(err, innerErr)
+			}
 			ret = -1
 			break LOOP
 		}

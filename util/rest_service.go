@@ -1,9 +1,10 @@
 package util
 
 import (
-	"github.com/ant0ine/go-json-rest/rest"
 	"log"
 	"net/http"
+
+	"github.com/ant0ine/go-json-rest/rest"
 )
 
 // 出力の定義
@@ -17,17 +18,19 @@ type HttpServer struct {
 	Port    string
 }
 
-func (self *HttpServer) Start() {
+func (hs *HttpServer) Start() {
 
 	api := rest.NewApi()
 	api.Use(rest.DefaultDevStack...)
 
 	router, err := rest.MakeRouter(
-		rest.Get(self.URLPath,
+		rest.Get(hs.URLPath,
 			func(w rest.ResponseWriter, req *rest.Request) {
-				w.WriteJson(&OutputSchema{
-					self.Status.Status,
-				})
+				if err := w.WriteJson(&OutputSchema{
+					hs.Status.Status,
+				}); err != nil {
+					log.Fatal(err)
+				}
 			}),
 	)
 	if err != nil {
@@ -39,7 +42,7 @@ func (self *HttpServer) Start() {
 
 	log.Println("HttpServer started")
 
-	log.Fatal(http.ListenAndServe(self.Port, nil))
+	log.Fatal(http.ListenAndServe(hs.Port, nil))
 }
 
 func NewHttpServer(ss *ServiceStatus, gconfig *GlobalConfig) *HttpServer {

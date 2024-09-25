@@ -5,11 +5,11 @@ type ServiceStatus struct {
 	GlobalConfig *GlobalConfig
 }
 
-func (self *ServiceStatus) SetMaintenance() {
-	self.Status = self.GlobalConfig.RetFailed
+func (ss *ServiceStatus) SetMaintenance() {
+	ss.Status = ss.GlobalConfig.RetFailed
 }
-func (self *ServiceStatus) SetInservice() {
-	self.Status = self.GlobalConfig.RetSuccess
+func (ss *ServiceStatus) SetInservice() {
+	ss.Status = ss.GlobalConfig.RetSuccess
 }
 func NewServiceStatus(gconfig *GlobalConfig) *ServiceStatus {
 	return &ServiceStatus{Status: "MAINTENANCE", GlobalConfig: gconfig}
