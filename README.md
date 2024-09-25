@@ -4,12 +4,17 @@
 
 スクリプトを定期実行。  
 簡易なHTTPServerを起動し、  
-指定URLにアクセスすることでスクリプトのstatus codeに応じ、  
+指定URLにアクセスすることでスクリプトの終了ステータスに応じ、  
 結果をJSON形式で返却  
 
-http://[server]:8080/healthcheck
+port, URLパス、返却文字列はconf/global.jsonに指定
+http://[server]:[port]/healthcheck
+
+実行するscriptはconf/script.jsonに指定する
+Scriptの実行はintervalで指定した間隔で実行  
 
 結果
+exit code 0 の場合
 
 ```
 {
@@ -17,15 +22,15 @@ http://[server]:8080/healthcheck
 }
 ```
 
+exit code 1 の場合
 ```
 {
   "Result": "FAILED",
 }
 ```
 
-configでメンテナンスファイルを指定しておくとサービス正常稼働時でもFAILEDが返却されます。  
-Scriptの実行はintervalで指定した間隔で実行されます。  
-REST APIへのアクセスとScriptの実行は非同期になっています。
+configでメンテナンスファイルを指定しておくとサービス正常稼働時でもFAILEDが返却される。  
+REST APIへのアクセスとScriptの実行は非同期で実行
 
 ## Library
 
@@ -37,7 +42,22 @@ gopkg.in/natefinch/lumberjack.v2
 ## build
 
 ```
-go build
+make build
+```
+
+## create docker image
+
+```
+make image
+```
+
+## execute e2e test
+
+ローカルにDockerコンテナを起動  
+8080, 8081を利用しsuccess, fail時のe2eテストを行う
+
+```
+make e2e
 ```
 
 ## usage

@@ -1,0 +1,13 @@
+#!/bin/sh
+
+# exec command
+echo hello
+RET=$?
+
+if [ $RET = 0 ]; then
+  #  echo "exit state 0 == success"
+  exit 0
+else
+  #  echo "exit state 1 == error"
+  exit 1 
+fi

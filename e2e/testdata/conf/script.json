@@ -1,0 +1,8 @@
+{
+    "id": "Id",
+    "name": "Name",
+    "script": "scripts/sample_script",
+    "maintenance_file": "/tmp/maintenance",
+    "timeout": "10s",
+    "interval": "1s"
+}
