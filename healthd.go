@@ -26,7 +26,9 @@ func main() {
 	go func() {
 		for {
 			<-c
-			l.Rotate()
+			if err := l.Rotate(); err != nil {
+				fmt.Printf("%v", err)
+			}
 		}
 	}()
 

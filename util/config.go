@@ -3,7 +3,7 @@ package util
 import (
 	"encoding/json"
 	"errors"
-	"io/ioutil"
+	"os"
 	"os/exec"
 	"regexp"
 	"time"
@@ -21,7 +21,7 @@ type GlobalConfig struct {
 	RetFailed  string `json:"ret_failed"`
 }
 
-func (conf GlobalConfig) validateConfig() error {
+func (conf *GlobalConfig) validateConfig() error {
 	var check bool
 	// format check
 	check, _ = regexp.MatchString(`^:[0-9]{2,5}`, conf.Port)
@@ -35,7 +35,7 @@ func (conf GlobalConfig) validateConfig() error {
 
 	return nil
 }
-func (conf GlobalConfig) setDefaultConfig() IConfig {
+func (conf *GlobalConfig) setDefaultConfig() IConfig {
 	if conf.Port == "" {
 		conf.Port = ":80"
 	} else {
@@ -52,7 +52,7 @@ func (conf GlobalConfig) setDefaultConfig() IConfig {
 	if conf.RetFailed == "" {
 		conf.RetFailed = "MAINITENANCE"
 	}
-	return &conf
+	return conf
 }
 
 type ScriptConfig struct {
@@ -64,7 +64,7 @@ type ScriptConfig struct {
 	Timeout         string `json:"timeout"`
 }
 
-func (conf ScriptConfig) validateConfig() error {
+func (conf *ScriptConfig) validateConfig() error {
 	// Idが指定されているか
 	if conf.Id == "" {
 		return errors.New("check id not defined")
@@ -87,14 +87,14 @@ func (conf ScriptConfig) validateConfig() error {
 	return nil
 }
 
-func (conf ScriptConfig) setDefaultConfig() IConfig {
-	return &conf
+func (conf *ScriptConfig) setDefaultConfig() IConfig {
+	return conf
 }
 
 // Json Configの読み込み、Config構造体への展開
 func NewConfig(config_path string, config IConfig) (IConfig, error) {
 	// file exist check
-	file, err := ioutil.ReadFile(config_path)
+	file, err := os.ReadFile(config_path)
 	if err != nil {
 		return nil, err
 	}
