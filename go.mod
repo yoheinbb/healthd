@@ -1,4 +1,4 @@
-module healthd
+module github.com/yoheinbb/healthd
 
 go 1.23.1
 

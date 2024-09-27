@@ -2,13 +2,13 @@ package main
 
 import (
 	"fmt"
-	"healthd/util"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
+	"github.com/yoheinbb/healthd/internal/util"
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 

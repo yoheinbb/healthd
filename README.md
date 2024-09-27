@@ -97,3 +97,22 @@ conf/script.json
   "timeout": "10s"
 }
 ```
+
+## directory structure
+
+```
+.
+├── Dockerfile
+├── Makefile
+├── README.md
+├── configs   # sample configs
+├── e2e       # e2e test
+├── go.mod
+├── go.sum
+├── internal  # internal pkg
+└── main.go
+```
+
+ref:  
+* https://go.dev/doc/modules/layout#package-or-command-with-supporting-packages
+* https://github.com/golang-standards/project-layout
