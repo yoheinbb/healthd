@@ -1,6 +1,7 @@
 package util
 
 import (
+	"context"
 	"log"
 	"net/http"
 
@@ -16,9 +17,10 @@ type HttpServer struct {
 	Status  *ServiceStatus
 	URLPath string
 	Port    string
+	Server  *http.Server
 }
 
-func (hs *HttpServer) Start() {
+func (hs *HttpServer) Start() error {
 
 	api := rest.NewApi()
 	api.Use(rest.DefaultDevStack...)
@@ -29,20 +31,28 @@ func (hs *HttpServer) Start() {
 				if err := w.WriteJson(&OutputSchema{
 					hs.Status.Status,
 				}); err != nil {
-					log.Fatal(err)
+					rest.Error(w, err.Error(), http.StatusInternalServerError)
 				}
 			}),
 	)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	api.SetApp(router)
 
-	http.Handle("/", api.MakeHandler())
+	server := &http.Server{
+		Addr:    hs.Port,
+		Handler: api.MakeHandler(),
+	}
+	hs.Server = server
 
 	log.Println("HttpServer started")
 
-	log.Fatal(http.ListenAndServe(hs.Port, nil))
+	return server.ListenAndServe()
+}
+
+func (hs *HttpServer) Shutdown() error {
+	return hs.Server.Shutdown(context.Background())
 }
 
 func NewHttpServer(ss *ServiceStatus, gconfig *GlobalConfig) *HttpServer {
