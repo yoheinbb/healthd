@@ -11,25 +11,37 @@ import (
 )
 
 type ServiceStatus struct {
-	Status       string
-	GlobalConfig *GlobalConfig
-	ScriptConfig *ScriptConfig
+	Status          string
+	RetFailed       string
+	RetSuccess      string
+	Interval        string
+	Timeout         string
+	MaintenanceFile string
+	Script          string
 }
 
-func NewServiceStatus(gconfig *GlobalConfig, sconfig *ScriptConfig) *ServiceStatus {
-	return &ServiceStatus{Status: "MAINTENANCE", GlobalConfig: gconfig, ScriptConfig: sconfig}
+func NewServiceStatus(retFailed, retSuccess, interval, timeout, maintenanceFile, script string) *ServiceStatus {
+	return &ServiceStatus{
+		RetFailed:       retFailed,
+		RetSuccess:      retSuccess,
+		Interval:        interval,
+		Timeout:         timeout,
+		MaintenanceFile: maintenanceFile,
+		Script:          script,
+	}
 }
+
 func (ss *ServiceStatus) SetMaintenance() {
-	ss.Status = ss.GlobalConfig.RetFailed
+	ss.Status = ss.RetFailed
 }
 func (ss *ServiceStatus) SetInservice() {
-	ss.Status = ss.GlobalConfig.RetSuccess
+	ss.Status = ss.RetSuccess
 }
 
 // scriptをバックグラウンドでcheckInterval間隔で実行
 // Statusメンバ変数を更新する
 func (ss *ServiceStatus) Start(ctx context.Context) error {
-	interval, err := (strconv.Atoi(strings.Replace(ss.ScriptConfig.Interval, "s", "", -1)))
+	interval, err := (strconv.Atoi(strings.Replace(ss.Interval, "s", "", -1)))
 	if err != nil {
 		return err
 	}
@@ -46,11 +58,11 @@ func (ss *ServiceStatus) Start(ctx context.Context) error {
 		}
 	}
 }
-func (ss *ServiceStatus) updateStatus() {
 
-	script := ss.ScriptConfig.Script
-	maintenance_file := ss.ScriptConfig.MaintenanceFile
-	cmdTimeout, _ := time.ParseDuration(ss.ScriptConfig.Timeout)
+func (ss *ServiceStatus) updateStatus() {
+	script := ss.Script
+	maintenance_file := ss.MaintenanceFile
+	cmdTimeout, _ := time.ParseDuration(ss.Timeout)
 
 	statusCode, err := ExecCommand(script, cmdTimeout)
 	if err != nil {

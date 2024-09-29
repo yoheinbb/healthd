@@ -16,12 +16,6 @@ import (
 )
 
 func main() {
-	// todo: from config
-	l := &lumberjack.Logger{Filename: "healthd.log", MaxSize: 100, // megabytes
-		MaxBackups: 3,
-		MaxAge:     7, //days
-	}
-	log.SetOutput(l)
 
 	fmt.Println("## Get Args ##")
 	cmd_arg := util.ReadCommandArg()
@@ -63,6 +57,13 @@ func main() {
 
 	eg, gctx := errgroup.WithContext(ctx)
 
+	// todo: from config
+	l := &lumberjack.Logger{Filename: "healthd.log", MaxSize: 100, // megabytes
+		MaxBackups: 3,
+		MaxAge:     7, //days
+	}
+	log.SetOutput(l)
+
 	// signal channel for SIGHUP
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, syscall.SIGHUP)
@@ -85,8 +86,14 @@ func main() {
 	})
 
 	// Statusを保持する変数
-	ss := util.NewServiceStatus(gconfig, sconfig)
-	// scriptをバックグラウンドでcheckInterval間隔で実行
+	ss := util.NewServiceStatus(
+		gconfig.RetFailed,
+		gconfig.RetSuccess,
+		sconfig.Interval,
+		sconfig.Timeout,
+		sconfig.MaintenanceFile,
+		sconfig.Script,
+	)
 	// start getStatus goroutine
 	eg.Go(func() error {
 		if err := ss.Start(gctx); err != nil {
@@ -103,7 +110,7 @@ func main() {
 	})
 
 	// Statusを返却するHttpServerインスタンス生成
-	hs := util.NewHttpServer(ss, gconfig)
+	hs := util.NewHttpServer(ss, gconfig.URLPath, gconfig.Port)
 	// start httServer goroutine
 	eg.Go(func() error {
 		fmt.Println("exec curl from other console:  `curl localhost" + gconfig.Port + gconfig.URLPath + "`")

@@ -8,6 +8,33 @@ import (
 	"time"
 )
 
+func ExecCommand(script string, secDuration time.Duration) (int, error) {
+	cmd := exec.Command(script)
+	timeout := time.After(secDuration)
+	statusChan, err := runCommand(cmd)
+	if err != nil {
+		return -1, err
+	}
+
+	var ret int
+LOOP:
+	for {
+		select {
+		case ret = <-statusChan:
+			break LOOP
+		case <-timeout:
+			err = errors.New(script + " timeout!! kill process")
+			if innerErr := cmd.Process.Kill(); innerErr != nil {
+				err = errors.Join(err, innerErr)
+			}
+			ret = -1
+			break LOOP
+		}
+	}
+
+	return ret, err
+}
+
 func runCommand(cmd *exec.Cmd) (<-chan int, error) {
 	err := cmd.Start()
 	if err != nil {
@@ -34,31 +61,4 @@ func runCommand(cmd *exec.Cmd) (<-chan int, error) {
 		statusChan <- statusCode
 	}(cmd)
 	return statusChan, nil
-}
-
-func ExecCommand(script string, secDuration time.Duration) (int, error) {
-	cmd := exec.Command(script)
-	timeout := time.After(secDuration)
-	statusChan, err := runCommand(cmd)
-	if err != nil {
-		return -1, err
-	}
-
-	var ret int
-LOOP:
-	for {
-		select {
-		case ret = <-statusChan:
-			break LOOP
-		case <-timeout:
-			err = errors.New(script + " timeout!! kill process")
-			if innerErr := cmd.Process.Kill(); innerErr != nil {
-				err = errors.Join(err, innerErr)
-			}
-			ret = -1
-			break LOOP
-		}
-	}
-
-	return ret, err
 }

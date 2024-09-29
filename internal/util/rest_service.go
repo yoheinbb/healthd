@@ -20,6 +20,11 @@ type HttpServer struct {
 	Server  *http.Server
 }
 
+func NewHttpServer(ss *ServiceStatus, urlPath, port string) *HttpServer {
+
+	return &HttpServer{Status: ss, URLPath: urlPath, Port: port}
+}
+
 func (hs *HttpServer) Start() error {
 
 	api := rest.NewApi()
@@ -53,9 +58,4 @@ func (hs *HttpServer) Start() error {
 
 func (hs *HttpServer) Shutdown() error {
 	return hs.Server.Shutdown(context.Background())
-}
-
-func NewHttpServer(ss *ServiceStatus, gconfig *GlobalConfig) *HttpServer {
-
-	return &HttpServer{Status: ss, URLPath: gconfig.URLPath, Port: gconfig.Port}
 }
