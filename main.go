@@ -8,10 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"strconv"
-	"strings"
 	"syscall"
-	"time"
 
 	"github.com/yoheinbb/healthd/internal/util"
 	"golang.org/x/sync/errgroup"
@@ -40,13 +37,6 @@ func main() {
 		fmt.Print(err)
 		os.Exit(1)
 	}
-
-	interval, err := (strconv.Atoi(strings.Replace(sconfig.Interval, "s", "", -1)))
-	if err != nil {
-		fmt.Print(err)
-		os.Exit(1)
-	}
-	intervalTime := time.Duration(interval)
 
 	fmt.Println("############################")
 	fmt.Println("###   Start Healthd!!!   ###")
@@ -99,19 +89,17 @@ func main() {
 	// scriptをバックグラウンドでcheckInterval間隔で実行
 	// start getStatus goroutine
 	eg.Go(func() error {
-		ticker := time.NewTicker(time.Duration(intervalTime) * time.Second)
-		ss.GetStatus()
-		for {
-			select {
-			case <-ticker.C:
-				ss.GetStatus()
-			case <-gctx.Done():
-				if !errors.Is(gctx.Err(), context.Canceled) {
-					return gctx.Err()
-				}
-				return nil
+		if err := ss.Start(gctx); err != nil {
+			if !errors.Is(err, context.Canceled) {
+				return err
 			}
 		}
+
+		<-gctx.Done()
+		if !errors.Is(gctx.Err(), context.Canceled) {
+			return gctx.Err()
+		}
+		return nil
 	})
 
 	// Statusを返却するHttpServerインスタンス生成

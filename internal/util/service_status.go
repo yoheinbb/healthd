@@ -1,9 +1,12 @@
 package util
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -13,17 +16,37 @@ type ServiceStatus struct {
 	ScriptConfig *ScriptConfig
 }
 
+func NewServiceStatus(gconfig *GlobalConfig, sconfig *ScriptConfig) *ServiceStatus {
+	return &ServiceStatus{Status: "MAINTENANCE", GlobalConfig: gconfig, ScriptConfig: sconfig}
+}
 func (ss *ServiceStatus) SetMaintenance() {
 	ss.Status = ss.GlobalConfig.RetFailed
 }
 func (ss *ServiceStatus) SetInservice() {
 	ss.Status = ss.GlobalConfig.RetSuccess
 }
-func NewServiceStatus(gconfig *GlobalConfig, sconfig *ScriptConfig) *ServiceStatus {
-	return &ServiceStatus{Status: "MAINTENANCE", GlobalConfig: gconfig, ScriptConfig: sconfig}
-}
 
-func (ss *ServiceStatus) GetStatus() {
+// scriptをバックグラウンドでcheckInterval間隔で実行
+// Statusメンバ変数を更新する
+func (ss *ServiceStatus) Start(ctx context.Context) error {
+	interval, err := (strconv.Atoi(strings.Replace(ss.ScriptConfig.Interval, "s", "", -1)))
+	if err != nil {
+		return err
+	}
+	intervalTime := time.Duration(interval)
+
+	ticker := time.NewTicker(time.Duration(intervalTime) * time.Second)
+	ss.updateStatus()
+	for {
+		select {
+		case <-ticker.C:
+			ss.updateStatus()
+		case <-ctx.Done():
+			return ctx.Err()
+		}
+	}
+}
+func (ss *ServiceStatus) updateStatus() {
 
 	script := ss.ScriptConfig.Script
 	maintenance_file := ss.ScriptConfig.MaintenanceFile
