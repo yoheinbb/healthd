@@ -10,6 +10,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/yoheinbb/healthd/internal/service"
 	"github.com/yoheinbb/healthd/internal/util"
 	"golang.org/x/sync/errgroup"
 	"gopkg.in/natefinch/lumberjack.v2"
@@ -85,10 +86,8 @@ func main() {
 		}
 	})
 
-	// Statusを保持する変数
-	ss := util.NewServiceStatus(
-		gconfig.RetFailed,
-		gconfig.RetSuccess,
+	// CmdExecStatusを保持する変数
+	css := service.NewCmdExecStatusService(
 		sconfig.Interval,
 		sconfig.Timeout,
 		sconfig.MaintenanceFile,
@@ -96,7 +95,7 @@ func main() {
 	)
 	// start getStatus goroutine
 	eg.Go(func() error {
-		if err := ss.Start(gctx); err != nil {
+		if err := css.Start(gctx); err != nil {
 			if !errors.Is(err, context.Canceled) {
 				return err
 			}
@@ -110,11 +109,11 @@ func main() {
 	})
 
 	// Statusを返却するHttpServerインスタンス生成
-	hs := util.NewHttpServer(ss, gconfig.URLPath, gconfig.Port)
+	rss := service.NewRestServerService(css, gconfig.URLPath, gconfig.Port, gconfig.RetSuccess, gconfig.RetFailed)
 	// start httServer goroutine
 	eg.Go(func() error {
 		fmt.Println("exec curl from other console:  `curl localhost" + gconfig.Port + gconfig.URLPath + "`")
-		if err := hs.Start(); err != nil {
+		if err := rss.StartServer(); err != nil {
 			if !errors.Is(err, http.ErrServerClosed) {
 				return err
 			}
@@ -134,7 +133,7 @@ func main() {
 			return gctx.Err()
 		}
 
-		if err := hs.Shutdown(); err != nil {
+		if err := rss.ShutdownServer(); err != nil {
 			return err
 		}
 		return nil
