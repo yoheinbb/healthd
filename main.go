@@ -35,13 +35,13 @@ func main() {
 		os.Exit(1)
 	}
 	fmt.Printf("## Read Script Config %s  ##\n", *cmd_arg.ScriptConfigFile)
-	config, err := util.NewScriptConfig(*cmd_arg.ScriptConfigFile)
+	sconfig, err := util.NewScriptConfig(*cmd_arg.ScriptConfigFile)
 	if err != nil {
 		fmt.Print(err)
 		os.Exit(1)
 	}
 
-	interval, err := (strconv.Atoi(strings.Replace(config.Interval, "s", "", -1)))
+	interval, err := (strconv.Atoi(strings.Replace(sconfig.Interval, "s", "", -1)))
 	if err != nil {
 		fmt.Print(err)
 		os.Exit(1)
@@ -62,10 +62,10 @@ func main() {
 	fmt.Println("  URLPath     : " + gconfig.URLPath)
 
 	fmt.Println("ScriptConfig Setting")
-	fmt.Println("  Script          : " + config.Script)
-	fmt.Println("  MaintenanceFile : " + config.MaintenanceFile)
-	fmt.Println("  CheckInterval   : " + config.Interval)
-	fmt.Println("  CommandTimeout  : " + config.Timeout)
+	fmt.Println("  Script          : " + sconfig.Script)
+	fmt.Println("  MaintenanceFile : " + sconfig.MaintenanceFile)
+	fmt.Println("  CheckInterval   : " + sconfig.Interval)
+	fmt.Println("  CommandTimeout  : " + sconfig.Timeout)
 	fmt.Println("")
 
 	ctx, done := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL)
@@ -95,16 +95,16 @@ func main() {
 	})
 
 	// Statusを保持する変数
-	ss := util.NewServiceStatus(gconfig)
+	ss := util.NewServiceStatus(gconfig, sconfig)
 	// scriptをバックグラウンドでcheckInterval間隔で実行
 	// start getStatus goroutine
 	eg.Go(func() error {
 		ticker := time.NewTicker(time.Duration(intervalTime) * time.Second)
-		getStatus(ss, config)
+		ss.GetStatus()
 		for {
 			select {
 			case <-ticker.C:
-				getStatus(ss, config)
+				ss.GetStatus()
 			case <-gctx.Done():
 				if !errors.Is(gctx.Err(), context.Canceled) {
 					return gctx.Err()
@@ -151,33 +151,4 @@ func main() {
 		log.Fatal(err)
 	}
 	fmt.Println("exit healthd")
-}
-
-func getStatus(ss *util.ServiceStatus, config *util.ScriptConfig) {
-
-	script := config.Script
-	maintenance_file := config.MaintenanceFile
-	cmdTimeout, _ := time.ParseDuration(config.Timeout)
-
-	statusCode, err := util.ExecCommand(script, cmdTimeout)
-	if err != nil {
-		fmt.Printf("%s", err)
-		log.Printf("%s", err)
-	}
-
-	if checkFileStatus(maintenance_file) {
-		ss.SetMaintenance()
-		log.Println("maintenance file exits : " + maintenance_file)
-	} else if statusCode == 0 {
-		ss.SetInservice()
-	} else {
-		ss.SetMaintenance()
-	}
-	//fmt.Printf("exit code : %d, script path : %s\n", statusCode, script)
-	//fmt.Printf("status    : %s\n", ss.Status)
-}
-
-func checkFileStatus(filename string) bool {
-	_, err := os.Stat(filename)
-	return err == nil
 }
