@@ -15,16 +15,16 @@ type OutputSchema struct {
 }
 
 type RestServerService struct {
-	CmdExecStatusService *CmdExecStatusService
-	URLPath              string
-	Port                 string
-	Server               *http.Server
-	RetSuccess           string
-	RetFailed            string
+	Status     *domain.Status
+	URLPath    string
+	Port       string
+	Server     *http.Server
+	RetSuccess string
+	RetFailed  string
 }
 
-func NewRestServerService(css *CmdExecStatusService, urlPath, port, retSuccess, retFailed string) *RestServerService {
-	return &RestServerService{CmdExecStatusService: css, URLPath: urlPath, Port: port, RetSuccess: retSuccess, RetFailed: retFailed}
+func NewRestServerService(status *domain.Status, urlPath, port, retSuccess, retFailed string) *RestServerService {
+	return &RestServerService{Status: status, URLPath: urlPath, Port: port, RetSuccess: retSuccess, RetFailed: retFailed}
 }
 
 func (rss *RestServerService) StartServer() error {
@@ -32,23 +32,7 @@ func (rss *RestServerService) StartServer() error {
 	api.Use(rest.DefaultDevStack...)
 
 	router, err := rest.MakeRouter(
-		rest.Get(rss.URLPath,
-			func(w rest.ResponseWriter, req *rest.Request) {
-				var outputVal string
-				switch rss.CmdExecStatusService.CmdExecStatus.Status {
-				case domain.Failed:
-					outputVal = rss.RetFailed
-				case domain.Success:
-					outputVal = rss.RetSuccess
-
-				}
-
-				if err := w.WriteJson(&OutputSchema{
-					Result: outputVal,
-				}); err != nil {
-					rest.Error(w, err.Error(), http.StatusInternalServerError)
-				}
-			}),
+		rest.Get(rss.URLPath, rss.healthdHandler),
 	)
 	if err != nil {
 		return err
@@ -68,4 +52,22 @@ func (rss *RestServerService) StartServer() error {
 
 func (rss *RestServerService) ShutdownServer() error {
 	return rss.Server.Shutdown(context.Background())
+}
+
+func (rss *RestServerService) healthdHandler(w rest.ResponseWriter, _ *rest.Request) {
+	var outputVal string
+	switch rss.Status.GetStatus() {
+	case domain.Success:
+		outputVal = rss.RetSuccess
+	case domain.Failed:
+		outputVal = rss.RetFailed
+	default:
+		outputVal = rss.RetFailed
+	}
+
+	if err := w.WriteJson(&OutputSchema{
+		Result: outputVal,
+	}); err != nil {
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }

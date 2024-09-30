@@ -10,6 +10,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/yoheinbb/healthd/internal/domain"
 	"github.com/yoheinbb/healthd/internal/service"
 	"github.com/yoheinbb/healthd/internal/util"
 	"golang.org/x/sync/errgroup"
@@ -86,8 +87,11 @@ func main() {
 		}
 	})
 
-	// CmdExecStatusを保持する変数
-	css := service.NewCmdExecStatusService(
+	// Statusを保持
+	status := domain.NewStatus()
+	// コマンドを実施しstatusに保持
+	ecs := service.NewExecCmdService(
+		status,
 		sconfig.Interval,
 		sconfig.Timeout,
 		sconfig.MaintenanceFile,
@@ -95,7 +99,7 @@ func main() {
 	)
 	// start getStatus goroutine
 	eg.Go(func() error {
-		if err := css.Start(gctx); err != nil {
+		if err := ecs.Start(gctx); err != nil {
 			if !errors.Is(err, context.Canceled) {
 				return err
 			}
@@ -109,7 +113,7 @@ func main() {
 	})
 
 	// Statusを返却するHttpServerインスタンス生成
-	rss := service.NewRestServerService(css, gconfig.URLPath, gconfig.Port, gconfig.RetSuccess, gconfig.RetFailed)
+	rss := service.NewRestServerService(status, gconfig.URLPath, gconfig.Port, gconfig.RetSuccess, gconfig.RetFailed)
 	// start httServer goroutine
 	eg.Go(func() error {
 		fmt.Println("exec curl from other console:  `curl localhost" + gconfig.Port + gconfig.URLPath + "`")
