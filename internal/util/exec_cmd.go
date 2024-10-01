@@ -1,64 +1,37 @@
 package util
 
 import (
+	"context"
 	"errors"
-	_ "fmt"
 	"os/exec"
 	"syscall"
 	"time"
 )
 
 func ExecCommand(script string, secDuration time.Duration) (int, error) {
-	cmd := exec.Command(script)
-	timeout := time.After(secDuration)
-	statusChan, err := runCommand(cmd)
-	if err != nil {
+	ctx, cancel := context.WithTimeout(context.Background(), secDuration)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, script)
+	if err := cmd.Start(); err != nil {
 		return -1, err
 	}
-
-	var ret int
-LOOP:
-	for {
-		select {
-		case ret = <-statusChan:
-			break LOOP
-		case <-timeout:
+	if err := cmd.Wait(); err != nil {
+		if isTimeoutError(err) {
 			err = errors.New(script + " timeout!! kill process")
-			if innerErr := cmd.Process.Kill(); innerErr != nil {
-				err = errors.Join(err, innerErr)
-			}
-			ret = -1
-			break LOOP
+			return -1, err
 		}
 	}
-
-	return ret, err
+	exitCode := cmd.ProcessState.ExitCode()
+	return exitCode, nil
 }
 
-func runCommand(cmd *exec.Cmd) (<-chan int, error) {
-	err := cmd.Start()
-	if err != nil {
-		return nil, err
+// https://github.com/YoshikiShibata/oak/blob/master/java.go#L95
+func isTimeoutError(err error) bool {
+	exitErr, ok := err.(*exec.ExitError)
+	if !ok {
+		return false
 	}
 
-	statusChan := make(chan int)
-	go func(cmd *exec.Cmd) {
-		err = cmd.Wait()
-		var statusCode int
-		if err != nil {
-			if exitError, ok := err.(*exec.ExitError); ok {
-				if exitStatus, ok := exitError.Sys().(syscall.WaitStatus); ok {
-					statusCode = exitStatus.ExitStatus()
-				} else {
-					statusCode = 0
-				}
-			} else {
-				statusCode = 0
-			}
-		} else {
-			statusCode = 0
-		}
-		statusChan <- statusCode
-	}(cmd)
-	return statusChan, nil
+	status := exitErr.Sys().(syscall.WaitStatus)
+	return status.Signaled()
 }
