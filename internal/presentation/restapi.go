@@ -1,11 +1,10 @@
 package presentation
 
 import (
-	"context"
-	"log"
 	"net/http"
 
 	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/yoheinbb/healthd/internal/util"
 )
 
 // 出力の定義
@@ -13,40 +12,23 @@ type OutputSchema struct {
 	Result string
 }
 
-type RestAPIServer struct {
-	URLPath string
-	Port    string
-	Server  *http.Server
-	Handler *Handler
-}
+func NewRestAPIServer(handler *Handler, gConfig *util.GlobalConfig) (*http.Server, error) {
 
-func NewRestAPIServer(handler *Handler, urlPath, port string) *RestAPIServer {
-	return &RestAPIServer{Handler: handler, URLPath: urlPath, Port: port}
-}
-
-func (ras *RestAPIServer) StartServer() error {
 	api := rest.NewApi()
 	api.Use(rest.DefaultDevStack...)
 
 	router, err := rest.MakeRouter(
-		rest.Get(ras.URLPath, ras.Handler.HealthdHandler),
+		rest.Get(gConfig.URLPath, handler.HealthdHandler),
 	)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	api.SetApp(router)
 
 	server := &http.Server{
-		Addr:    ras.Port,
+		Addr:    gConfig.Port,
 		Handler: api.MakeHandler(),
 	}
-	ras.Server = server
 
-	log.Println("HttpServer started")
-
-	return server.ListenAndServe()
-}
-
-func (ras *RestAPIServer) ShutdownServer() error {
-	return ras.Server.Shutdown(context.Background())
+	return server, nil
 }

@@ -91,13 +91,7 @@ func main() {
 	// Statusを保持
 	status := usecase.NewStatus(domain.NewStatus())
 	// コマンドを実施しstatusに保持
-	ecs := usecase.NewExecCmd(
-		status,
-		sconfig.Interval,
-		sconfig.Timeout,
-		sconfig.MaintenanceFile,
-		sconfig.Script,
-	)
+	ecs := usecase.NewExecCmd(status, sconfig)
 	// start getStatus goroutine
 	eg.Go(func() error {
 		if err := ecs.Start(gctx); err != nil {
@@ -114,12 +108,18 @@ func main() {
 	})
 
 	// Statusを返却するHttpServerインスタンス生成
-	handler := presentation.NewHandler(status, gconfig.RetSuccess, gconfig.RetFailed)
-	restAPIServer := presentation.NewRestAPIServer(handler, gconfig.URLPath, gconfig.Port)
+	handler := presentation.NewHandler(status, gconfig)
+	restAPIServer, err := presentation.NewRestAPIServer(handler, gconfig)
+	if err != nil {
+		fmt.Print(err)
+		os.Exit(1)
+	}
+
 	// start httServer goroutine
 	eg.Go(func() error {
+		log.Println("HttpServer start")
 		fmt.Println("exec curl from other console:  `curl localhost" + gconfig.Port + gconfig.URLPath + "`")
-		if err := restAPIServer.StartServer(); err != nil {
+		if err := restAPIServer.ListenAndServe(); err != nil {
 			if !errors.Is(err, http.ErrServerClosed) {
 				return err
 			}
@@ -131,6 +131,7 @@ func main() {
 		}
 		return nil
 	})
+
 	// signalを受けたらhttp serverを停止する
 	// shutdown httServer goroutine
 	eg.Go(func() error {
@@ -139,7 +140,7 @@ func main() {
 			return gctx.Err()
 		}
 
-		if err := restAPIServer.ShutdownServer(); err != nil {
+		if err := restAPIServer.Shutdown(context.Background()); err != nil {
 			return err
 		}
 		return nil

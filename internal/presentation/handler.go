@@ -5,28 +5,28 @@ import (
 
 	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/yoheinbb/healthd/internal/usecase"
+	"github.com/yoheinbb/healthd/internal/util"
 	"github.com/yoheinbb/healthd/internal/util/constant"
 )
 
 type Handler struct {
-	Status     *usecase.Status
-	RetSuccess string
-	RetFailed  string
+	Status  *usecase.Status
+	gConfig *util.GlobalConfig
 }
 
-func NewHandler(status *usecase.Status, retSuccess, retFailed string) *Handler {
-	return &Handler{Status: status, RetSuccess: retSuccess, RetFailed: retFailed}
+func NewHandler(status *usecase.Status, gConfig *util.GlobalConfig) *Handler {
+	return &Handler{Status: status, gConfig: gConfig}
 }
 
 func (h *Handler) HealthdHandler(w rest.ResponseWriter, _ *rest.Request) {
 	var outputVal string
 	switch h.Status.GetStatus() {
 	case constant.Success:
-		outputVal = h.RetSuccess
+		outputVal = h.gConfig.RetSuccess
 	case constant.Failed:
-		outputVal = h.RetFailed
+		outputVal = h.gConfig.RetFailed
 	default:
-		outputVal = h.RetFailed
+		outputVal = h.gConfig.RetFailed
 	}
 
 	if err := w.WriteJson(&OutputSchema{

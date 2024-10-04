@@ -12,20 +12,14 @@ import (
 )
 
 type ExecCmd struct {
-	Status          *Status
-	Interval        string
-	Timeout         string
-	MaintenanceFile string
-	Script          string
+	Status  *Status
+	Sconfig *util.ScriptConfig
 }
 
-func NewExecCmd(status *Status, interval, timeout, maintenanceFile, script string) *ExecCmd {
+func NewExecCmd(status *Status, sconfig *util.ScriptConfig) *ExecCmd {
 	return &ExecCmd{
-		Status:          status,
-		Interval:        interval,
-		Timeout:         timeout,
-		MaintenanceFile: maintenanceFile,
-		Script:          script,
+		Status:  status,
+		Sconfig: sconfig,
 	}
 }
 
@@ -33,7 +27,7 @@ func NewExecCmd(status *Status, interval, timeout, maintenanceFile, script strin
 // Statusメンバ変数を更新する
 func (ecs *ExecCmd) Start(ctx context.Context) error {
 
-	interval, err := (strconv.Atoi(strings.Replace(ecs.Interval, "s", "", -1)))
+	interval, err := (strconv.Atoi(strings.Replace(ecs.Sconfig.Interval, "s", "", -1)))
 	if err != nil {
 		return err
 	}
@@ -55,16 +49,16 @@ func (ecs *ExecCmd) Start(ctx context.Context) error {
 
 func (ecs *ExecCmd) updateStatus() error {
 	// check maintenance file
-	if checkFileStatus(ecs.MaintenanceFile) {
+	if checkFileStatus(ecs.Sconfig.MaintenanceFile) {
 		ecs.Status.SetFailed()
-		log.Println("maintenance file exits : " + ecs.MaintenanceFile)
+		log.Println("maintenance file exits : " + ecs.Sconfig.MaintenanceFile)
 		return nil
 	}
 
 	// execute command
-	cmdTimeout, _ := time.ParseDuration(ecs.Timeout)
+	cmdTimeout, _ := time.ParseDuration(ecs.Sconfig.Timeout)
 
-	statusCode, err := util.ExecCommand(ecs.Script, cmdTimeout)
+	statusCode, err := util.ExecCommand(ecs.Sconfig.Script, cmdTimeout)
 	if err != nil {
 		if !strings.Contains(err.Error(), "timeout") {
 			return err
