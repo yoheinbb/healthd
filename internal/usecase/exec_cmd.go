@@ -40,7 +40,9 @@ func (ecs *ExecCmd) Start(ctx context.Context) error {
 	for {
 		select {
 		case <-ticker.C:
-			ecs.updateStatus()
+			if err := ecs.updateStatus(); err != nil {
+				log.Printf("%v", err)
+			}
 		case <-ctx.Done():
 			return ctx.Err()
 		}
@@ -63,7 +65,6 @@ func (ecs *ExecCmd) updateStatus() error {
 		if !strings.Contains(err.Error(), "timeout") {
 			return err
 		}
-		log.Printf("%v", err)
 	}
 
 	if statusCode == 0 {
