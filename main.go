@@ -11,7 +11,8 @@ import (
 	"syscall"
 
 	"github.com/yoheinbb/healthd/internal/domain"
-	"github.com/yoheinbb/healthd/internal/service"
+	"github.com/yoheinbb/healthd/internal/presentation"
+	"github.com/yoheinbb/healthd/internal/usecase"
 	"github.com/yoheinbb/healthd/internal/util"
 	"golang.org/x/sync/errgroup"
 	"gopkg.in/natefinch/lumberjack.v2"
@@ -88,9 +89,9 @@ func main() {
 	})
 
 	// Statusを保持
-	status := domain.NewStatus()
+	status := usecase.NewStatus(domain.NewStatus())
 	// コマンドを実施しstatusに保持
-	ecs := service.NewExecCmdService(
+	ecs := usecase.NewExecCmd(
 		status,
 		sconfig.Interval,
 		sconfig.Timeout,
@@ -113,11 +114,12 @@ func main() {
 	})
 
 	// Statusを返却するHttpServerインスタンス生成
-	rss := service.NewRestServerService(status, gconfig.URLPath, gconfig.Port, gconfig.RetSuccess, gconfig.RetFailed)
+	handler := presentation.NewHandler(status, gconfig.RetSuccess, gconfig.RetFailed)
+	restAPIServer := presentation.NewRestAPIServer(handler, gconfig.URLPath, gconfig.Port)
 	// start httServer goroutine
 	eg.Go(func() error {
 		fmt.Println("exec curl from other console:  `curl localhost" + gconfig.Port + gconfig.URLPath + "`")
-		if err := rss.StartServer(); err != nil {
+		if err := restAPIServer.StartServer(); err != nil {
 			if !errors.Is(err, http.ErrServerClosed) {
 				return err
 			}
@@ -137,7 +139,7 @@ func main() {
 			return gctx.Err()
 		}
 
-		if err := rss.ShutdownServer(); err != nil {
+		if err := restAPIServer.ShutdownServer(); err != nil {
 			return err
 		}
 		return nil

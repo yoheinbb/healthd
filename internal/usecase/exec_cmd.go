@@ -1,4 +1,4 @@
-package service
+package usecase
 
 import (
 	"context"
@@ -8,20 +8,19 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yoheinbb/healthd/internal/domain"
 	"github.com/yoheinbb/healthd/internal/util"
 )
 
-type ExecCmdService struct {
-	Status          *domain.Status
+type ExecCmd struct {
+	Status          *Status
 	Interval        string
 	Timeout         string
 	MaintenanceFile string
 	Script          string
 }
 
-func NewExecCmdService(status *domain.Status, interval, timeout, maintenanceFile, script string) *ExecCmdService {
-	return &ExecCmdService{
+func NewExecCmd(status *Status, interval, timeout, maintenanceFile, script string) *ExecCmd {
+	return &ExecCmd{
 		Status:          status,
 		Interval:        interval,
 		Timeout:         timeout,
@@ -32,7 +31,7 @@ func NewExecCmdService(status *domain.Status, interval, timeout, maintenanceFile
 
 // scriptをバックグラウンドでcheckInterval間隔で実行
 // Statusメンバ変数を更新する
-func (ecs *ExecCmdService) Start(ctx context.Context) error {
+func (ecs *ExecCmd) Start(ctx context.Context) error {
 
 	interval, err := (strconv.Atoi(strings.Replace(ecs.Interval, "s", "", -1)))
 	if err != nil {
@@ -54,7 +53,7 @@ func (ecs *ExecCmdService) Start(ctx context.Context) error {
 	}
 }
 
-func (ecs *ExecCmdService) updateStatus() error {
+func (ecs *ExecCmd) updateStatus() error {
 	// check maintenance file
 	if checkFileStatus(ecs.MaintenanceFile) {
 		ecs.Status.SetFailed()

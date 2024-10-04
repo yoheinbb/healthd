@@ -122,8 +122,12 @@ curl localhost/healthcheck
 └── main.go
 ```
 
-ref:  
+## refs
+
+### directory structure
 * https://go.dev/doc/modules/layout#package-or-command-with-supporting-packages
 * https://github.com/golang-standards/project-layout
 
+### code structure
+* https://amasuda.xyz/post/2023-01-12-pros-cons-ddd-and-golang/
 

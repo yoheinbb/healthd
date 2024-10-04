@@ -1,28 +1,11 @@
 package domain
 
-type Status struct {
-	s string
-}
+import "github.com/yoheinbb/healthd/internal/util/constant"
 
-const (
-	Failed      = "FAILED"
-	Success     = "SUCCESS"
-	Maintenance = "MAINTENANCE"
-)
+type Status struct {
+	Status string
+}
 
 func NewStatus() *Status {
-	return &Status{s: Maintenance}
-
-}
-
-func (cs *Status) SetFailed() {
-	cs.s = Failed
-}
-
-func (cs *Status) SetSucess() {
-	cs.s = Success
-}
-
-func (cs *Status) GetStatus() string {
-	return cs.s
+	return &Status{Status: constant.Maintenance}
 }
