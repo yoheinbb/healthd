@@ -35,7 +35,7 @@ func (ecs *ExecCmd) Start(ctx context.Context) error {
 
 	ticker := time.NewTicker(time.Duration(intervalTime) * time.Second)
 	if err := ecs.updateStatus(); err != nil {
-		return err
+		log.Printf("%v", err)
 	}
 	for {
 		select {
@@ -62,9 +62,7 @@ func (ecs *ExecCmd) updateStatus() error {
 
 	statusCode, err := util.ExecCommand(ecs.Sconfig.Script, cmdTimeout)
 	if err != nil {
-		if !strings.Contains(err.Error(), "timeout") {
-			return err
-		}
+		return err
 	}
 
 	if statusCode == 0 {
