@@ -10,20 +10,20 @@ import (
 )
 
 type Handler struct {
-	Status  *usecase.Status
+	status  *usecase.Status
 	gConfig *util.GlobalConfig
 }
 
 func NewHandler(status *usecase.Status, gConfig *util.GlobalConfig) *Handler {
-	return &Handler{Status: status, gConfig: gConfig}
+	return &Handler{status: status, gConfig: gConfig}
 }
 
 func (h *Handler) HealthdHandler(w rest.ResponseWriter, _ *rest.Request) {
 	var outputVal string
-	switch h.Status.GetStatus() {
-	case constant.Success:
+	switch h.status.GetStatus() {
+	case constant.SUCCESS:
 		outputVal = h.gConfig.RetSuccess
-	case constant.Failed:
+	case constant.FAILED:
 		outputVal = h.gConfig.RetFailed
 	default:
 		outputVal = h.gConfig.RetFailed

@@ -2,7 +2,7 @@ package constant
 
 // domain status
 const (
-	Failed      = "FAILED"
-	Success     = "SUCCESS"
-	Maintenance = "MAINTENANCE"
+	FAILED      = "FAILED"
+	SUCCESS     = "SUCCESS"
+	MAINTENANCE = "MAINTENANCE"
 )

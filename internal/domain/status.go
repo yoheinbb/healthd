@@ -3,9 +3,16 @@ package domain
 import "github.com/yoheinbb/healthd/internal/util/constant"
 
 type Status struct {
-	Status string
+	s string
 }
 
 func NewStatus() *Status {
-	return &Status{Status: constant.Maintenance}
+	return &Status{s: constant.FAILED}
+}
+func (s *Status) GetStatus() string {
+	return s.s
+}
+func (s *Status) UpdateStatus(status string) {
+	s.s = status
+
 }

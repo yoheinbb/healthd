@@ -8,9 +8,12 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
+	"strings"
 	"syscall"
 
 	"github.com/yoheinbb/healthd/internal/domain"
+	"github.com/yoheinbb/healthd/internal/infrastructure"
 	"github.com/yoheinbb/healthd/internal/presentation"
 	"github.com/yoheinbb/healthd/internal/usecase"
 	"github.com/yoheinbb/healthd/internal/util"
@@ -88,13 +91,24 @@ func main() {
 		}
 	})
 
-	// Statusを保持
-	status := usecase.NewStatus(domain.NewStatus())
-	// コマンドを実施しstatusに保持
-	ecs := usecase.NewExecCmd(status, sconfig)
+	// domain
+	d := domain.NewStatus()
+	// cmd exec repository
+	r, err := infrastructure.NewExecCmdRepository(sconfig.MaintenanceFile, sconfig.Script, sconfig.Timeout)
+	if err != nil {
+		fmt.Print(err)
+		os.Exit(1)
+	}
+	// usecase for status
+	usecase := usecase.NewStatus(d, r)
 	// start getStatus goroutine
 	eg.Go(func() error {
-		if err := ecs.Start(gctx); err != nil {
+		interval, err := (strconv.Atoi(strings.Replace(sconfig.Interval, "s", "", -1)))
+		if err != nil {
+			return err
+		}
+
+		if err := usecase.StartStatusUpdater(gctx, interval); err != nil {
 			if !errors.Is(err, context.Canceled) {
 				return err
 			}
@@ -108,8 +122,7 @@ func main() {
 	})
 
 	// Statusを返却するHttpServerインスタンス生成
-	handler := presentation.NewHandler(status, gconfig)
-	restAPIServer, err := presentation.NewRestAPIServer(handler, gconfig)
+	restAPIServer, err := presentation.NewRestAPIServer(presentation.NewHandler(usecase, gconfig), gconfig)
 	if err != nil {
 		fmt.Print(err)
 		os.Exit(1)
