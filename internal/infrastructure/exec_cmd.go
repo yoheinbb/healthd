@@ -6,11 +6,10 @@ import (
 	"time"
 
 	"github.com/yoheinbb/healthd/internal/util"
-	"github.com/yoheinbb/healthd/internal/util/constant"
 )
 
 type ExecCmdRepository struct {
-	status          string
+	statusCode      int
 	maintenanceFile string
 	script          string
 	timeout         time.Duration
@@ -23,21 +22,21 @@ func NewExecCmdRepository(maintenanceFile, script, timeout string) (*ExecCmdRepo
 		return nil, err
 	}
 	return &ExecCmdRepository{
-		status:          constant.MAINTENANCE,
+		statusCode:      -1,
 		maintenanceFile: maintenanceFile,
 		script:          script,
 		timeout:         ttimeout,
 	}, nil
 }
 
-func (ecr *ExecCmdRepository) GetStatus() string {
-	return ecr.status
+func (ecr *ExecCmdRepository) GetStatus() int {
+	return ecr.statusCode
 }
 
 func (ecr *ExecCmdRepository) UpdateStatus() error {
 	// check maintenance file
 	if checkFileStatus(ecr.maintenanceFile) {
-		ecr.status = constant.FAILED
+		ecr.statusCode = 1
 		log.Println("maintenance file exits : " + ecr.maintenanceFile)
 		return nil
 	}
@@ -46,12 +45,8 @@ func (ecr *ExecCmdRepository) UpdateStatus() error {
 	if err != nil {
 		return err
 	}
+	ecr.statusCode = statusCode
 
-	if statusCode == 0 {
-		ecr.status = constant.SUCCESS
-	} else {
-		ecr.status = constant.FAILED
-	}
 	// fmt.Printf("exit code : %d, script path : %s\n", statusCode, ecs.Script)
 	// fmt.Printf("status    : %s\n", ecs.Status.GetStatus())
 	return nil

@@ -7,6 +7,7 @@ import (
 
 	"github.com/yoheinbb/healthd/internal/domain"
 	"github.com/yoheinbb/healthd/internal/domain/repository"
+	"github.com/yoheinbb/healthd/internal/util/constant"
 )
 
 type Status struct {
@@ -45,5 +46,16 @@ func (ecs *Status) StartStatusUpdater(ctx context.Context, interval int) error {
 }
 
 func (s *Status) updateStatus() {
-	s.status.UpdateStatus(s.repository.GetStatus())
+	var status string
+	statusCode := s.repository.GetStatus()
+	switch statusCode {
+	case -1:
+		status = constant.MAINTENANCE
+	case 0:
+		status = constant.SUCCESS
+	default:
+		status = constant.FAILED
+	}
+
+	s.status.UpdateStatus(status)
 }

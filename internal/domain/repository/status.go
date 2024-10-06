@@ -1,6 +1,6 @@
 package repository
 
 type Status interface {
-	GetStatus() string
+	GetStatus() int
 	UpdateStatus() error
 }

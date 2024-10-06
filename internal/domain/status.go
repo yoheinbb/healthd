@@ -7,7 +7,7 @@ type Status struct {
 }
 
 func NewStatus() *Status {
-	return &Status{s: constant.FAILED}
+	return &Status{s: constant.MAINTENANCE}
 }
 func (s *Status) GetStatus() string {
 	return s.s
