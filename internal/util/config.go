@@ -21,6 +21,14 @@ type GlobalConfig struct {
 	RetFailed  string `json:"ret_failed"`
 }
 
+func NewGlobalConfig(config_path string) (*GlobalConfig, error) {
+	config, err := newConfig(config_path, new(GlobalConfig))
+	if err != nil {
+		return nil, err
+	}
+	return config.(*GlobalConfig), err
+}
+
 func (conf *GlobalConfig) validateConfig() error {
 	var check bool
 	// format check
@@ -64,6 +72,14 @@ type ScriptConfig struct {
 	Timeout         string `json:"timeout"`
 }
 
+func NewScriptConfig(config_path string) (*ScriptConfig, error) {
+	config, err := newConfig(config_path, new(ScriptConfig))
+	if err != nil {
+		return nil, err
+	}
+	return config.(*ScriptConfig), err
+}
+
 func (conf *ScriptConfig) validateConfig() error {
 	// Idが指定されているか
 	if conf.Id == "" {
@@ -92,7 +108,7 @@ func (conf *ScriptConfig) setDefaultConfig() IConfig {
 }
 
 // Json Configの読み込み、Config構造体への展開
-func NewConfig(config_path string, config IConfig) (IConfig, error) {
+func newConfig(config_path string, config IConfig) (IConfig, error) {
 	// file exist check
 	file, err := os.ReadFile(config_path)
 	if err != nil {
@@ -114,19 +130,4 @@ func NewConfig(config_path string, config IConfig) (IConfig, error) {
 	}
 
 	return config, nil
-}
-
-func NewGlobalConfig(config_path string) (*GlobalConfig, error) {
-	config, err := NewConfig(config_path, new(GlobalConfig))
-	if err != nil {
-		return nil, err
-	}
-	return config.(*GlobalConfig), err
-}
-func NewScriptConfig(config_path string) (*ScriptConfig, error) {
-	config, err := NewConfig(config_path, new(ScriptConfig))
-	if err != nil {
-		return nil, err
-	}
-	return config.(*ScriptConfig), err
 }

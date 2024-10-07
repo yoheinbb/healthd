@@ -91,9 +91,43 @@ conf/script.json
 {
   "id": "sample",
   "name": "sample",
-  "script": "scripts/sample_script",
+  "script": "configs/scripts/sample_script",
   "maintenance_file": "/tmp/maintenance",
   "interval": "10s",
   "timeout": "10s"
 }
 ```
+
+## test in local environment with sample config
+
+```
+go run main.go -global-config configs/conf/global.json -script-config configs/conf/script.json
+```
+```
+curl localhost/healthcheck
+```
+
+## directory structure
+
+```
+.
+├── Dockerfile
+├── Makefile
+├── README.md
+├── configs   # sample configs
+├── e2e       # e2e test
+├── go.mod
+├── go.sum
+├── internal  # internal pkg
+└── main.go
+```
+
+## refs
+
+### directory structure
+* https://go.dev/doc/modules/layout#package-or-command-with-supporting-packages
+* https://github.com/golang-standards/project-layout
+
+### code structure
+* https://amasuda.xyz/post/2023-01-12-pros-cons-ddd-and-golang/
+

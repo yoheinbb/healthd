@@ -10,6 +10,7 @@ jobs:
           cache-dependency-path: go.sum
       - uses: golangci/golangci-lint-action@v6
       - run: make lint
+      - run: make test
       - run: make image
       - name: Run test
         run: make e2e
