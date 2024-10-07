@@ -122,7 +122,11 @@ func main() {
 	})
 
 	// Statusを返却するHttpServerインスタンス生成
-	restAPIServer, err := presentation.NewRestAPIServer(presentation.NewHandler(usecase, gconfig), gconfig)
+	restAPIServer, err := presentation.NewRestAPIServer(
+		gconfig.URLPath,
+		gconfig.Port,
+		presentation.NewHandler(usecase, gconfig.RetSuccess, gconfig.RetFailed),
+	)
 	if err != nil {
 		fmt.Print(err)
 		os.Exit(1)

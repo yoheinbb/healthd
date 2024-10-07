@@ -11,16 +11,16 @@ import (
 )
 
 type Status struct {
-	status     *domain.Status
+	domain     *domain.Status
 	repository repository.Status
 }
 
-func NewStatus(status *domain.Status, repository repository.Status) *Status {
-	return &Status{status: status, repository: repository}
+func NewStatus(domain_status *domain.Status, repository repository.Status) *Status {
+	return &Status{domain: domain_status, repository: repository}
 }
 
 func (s *Status) GetStatus() string {
-	return s.status.GetStatus()
+	return s.domain.GetStatus()
 }
 
 func (ecs *Status) StartStatusUpdater(ctx context.Context, interval int) error {
@@ -57,5 +57,5 @@ func (s *Status) updateStatus() {
 		status = constant.FAILED
 	}
 
-	s.status.UpdateStatus(status)
+	s.domain.UpdateStatus(status)
 }

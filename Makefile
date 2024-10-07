@@ -14,6 +14,10 @@ image:
 e2e:
 	cd e2e;go run github.com/onsi/ginkgo/v2/ginkgo -v
 
+.PHONY: test
+test:
+	go test `go list ./... | grep -v e2e`
+
 .PHONY: lint
 lint:
 	golangci-lint run
