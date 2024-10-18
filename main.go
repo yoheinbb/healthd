@@ -122,7 +122,7 @@ func main() {
 	})
 
 	// Statusを返却するHttpServerインスタンス生成
-	restAPIServer, err := presentation.NewRestAPIServer(
+	apiServer, err := presentation.NewAPIServer(
 		gconfig.URLPath,
 		gconfig.Port,
 		presentation.NewHandler(usecase, gconfig.RetSuccess, gconfig.RetFailed),
@@ -136,7 +136,7 @@ func main() {
 	eg.Go(func() error {
 		log.Println("HttpServer start")
 		fmt.Println("exec curl from other console:  `curl localhost" + gconfig.Port + gconfig.URLPath + "`")
-		if err := restAPIServer.ListenAndServe(); err != nil {
+		if err := apiServer.ListenAndServe(); err != nil {
 			if !errors.Is(err, http.ErrServerClosed) {
 				return err
 			}
@@ -157,7 +157,7 @@ func main() {
 			return gctx.Err()
 		}
 
-		if err := restAPIServer.Shutdown(context.Background()); err != nil {
+		if err := apiServer.Shutdown(context.Background()); err != nil {
 			return err
 		}
 		return nil
