@@ -32,13 +32,6 @@ exit code 1 の場合
 configでメンテナンスファイルを指定しておくとサービス正常稼働時でもFAILEDが返却される。  
 REST APIへのアクセスとScriptの実行は非同期で実行
 
-## Library
-
-```
-github.com/ant0ine/go-json-rest/rest
-gopkg.in/natefinch/lumberjack.v2
-```
-
 ## build
 
 ```
@@ -101,7 +94,7 @@ conf/script.json
 ## test in local environment with sample config
 
 ```
-go run main.go -global-config configs/conf/global.json -script-config configs/conf/script.json
+make run-local
 ```
 ```
 curl localhost/healthcheck
