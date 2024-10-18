@@ -3,7 +3,6 @@ module github.com/yoheinbb/healthd
 go 1.23.1
 
 require (
-	github.com/ant0ine/go-json-rest v3.3.2+incompatible
 	github.com/gin-gonic/gin v1.10.0
 	github.com/onsi/ginkgo/v2 v2.20.2
 	github.com/onsi/gomega v1.34.2
