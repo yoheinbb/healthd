@@ -7,12 +7,12 @@ import (
 )
 
 type Handler struct {
-	status     *usecase.Status
+	status     usecase.IStatus
 	retSuccess string
 	retFailed  string
 }
 
-func NewHandler(status *usecase.Status, retSuccess, retFailed string) *Handler {
+func NewHandler(status usecase.IStatus, retSuccess, retFailed string) *Handler {
 	return &Handler{status: status, retSuccess: retSuccess, retFailed: retFailed}
 }
 

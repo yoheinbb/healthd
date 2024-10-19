@@ -10,6 +10,10 @@ import (
 	"github.com/yoheinbb/healthd/internal/util/constant"
 )
 
+type IStatus interface {
+	GetStatus() string
+}
+
 type Status struct {
 	domain     *domain.Status
 	repository repository.Status
@@ -23,22 +27,22 @@ func (s *Status) GetStatus() string {
 	return s.domain.GetStatus()
 }
 
-func (ecs *Status) StartStatusUpdater(ctx context.Context, interval int) error {
+func (s *Status) StartStatusUpdater(ctx context.Context, interval int) error {
 	intervalTime := time.Duration(interval)
 
 	ticker := time.NewTicker(time.Duration(intervalTime) * time.Second)
-	if err := ecs.repository.UpdateStatus(); err != nil {
+	if err := s.repository.UpdateStatus(); err != nil {
 		log.Printf("%v", err)
 	}
-	ecs.updateStatus()
+	s.updateStatus()
 	// intervalTime毎にStatusをupdateする
 	for {
 		select {
 		case <-ticker.C:
-			if err := ecs.repository.UpdateStatus(); err != nil {
+			if err := s.repository.UpdateStatus(); err != nil {
 				log.Printf("%v", err)
 			}
-			ecs.updateStatus()
+			s.updateStatus()
 		case <-ctx.Done():
 			return ctx.Err()
 		}
