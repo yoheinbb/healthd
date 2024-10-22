@@ -119,7 +119,7 @@ func main() {
 	// start httServer goroutine
 	eg.Go(func() error {
 		logger.Info("HttpServer start")
-		logger.Info(fmt.Sprintf("exec curl from other console:  `curl localhost" + gconfig.Port + gconfig.URLPath + "`"))
+		logger.Info(fmt.Sprintf("exec curl from other console:  `curl localhost %s %s`", gconfig.Port, gconfig.URLPath))
 		if err := apiServer.ListenAndServe(); err != nil {
 			if !errors.Is(err, http.ErrServerClosed) {
 				return err
