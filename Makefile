@@ -21,3 +21,7 @@ test:
 .PHONY: lint
 lint:
 	golangci-lint run
+
+.PHONY: run-local
+run-local:
+	go run main.go -global-config configs/conf/global.json -script-config configs/conf/script.json
