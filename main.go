@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -18,85 +19,67 @@ import (
 	"github.com/yoheinbb/healthd/internal/usecase"
 	"github.com/yoheinbb/healthd/internal/util"
 	"golang.org/x/sync/errgroup"
-	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 func main() {
 
-	fmt.Println("## Get Args ##")
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+
+	logger.Info("## Get Args ##")
 	cmd_arg := util.ReadCommandArg()
-	fmt.Printf("## Read Global Config %s  ##\n", *cmd_arg.GlobalConfigFile)
+
+	logger = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: cmd_arg.LogLevel}))
+	slog.SetDefault(logger)
+
+	logger.Info(fmt.Sprintf("## Read Global Config %s  ##\n", *cmd_arg.GlobalConfigFile))
 	gconfig, err := util.NewGlobalConfig(*cmd_arg.GlobalConfigFile)
 	if err != nil {
-		fmt.Print(err)
+		logger.Error(err.Error())
 		os.Exit(1)
 	}
-	fmt.Printf("## Read Script Config %s  ##\n", *cmd_arg.ScriptConfigFile)
+	logger.Info(fmt.Sprintf("## Read Script Config %s  ##\n", *cmd_arg.ScriptConfigFile))
 	sconfig, err := util.NewScriptConfig(*cmd_arg.ScriptConfigFile)
 	if err != nil {
-		fmt.Print(err)
+		logger.Error(err.Error())
 		os.Exit(1)
 	}
 
-	fmt.Println("############################")
-	fmt.Println("###   Start Healthd!!!   ###")
-	fmt.Println("############################")
-	fmt.Println("")
+	startMessageTemplate := `
+	############################
+	###   Start Healthd!!!   ###
+	############################
 
-	fmt.Println("global_config_file_path : " + *cmd_arg.GlobalConfigFile)
-	fmt.Println("script_config_file_path : " + *cmd_arg.ScriptConfigFile)
-	fmt.Println("")
+	global_config_file_path : %s
+	script_config_file_path : %s
 
-	fmt.Println("GlobalConfig Setting")
-	fmt.Println("  Port        : " + gconfig.Port)
-	fmt.Println("  URLPath     : " + gconfig.URLPath)
+	GlobalConfig Setting
+	  Port        : %s
+	  URLPath     : %s
 
-	fmt.Println("ScriptConfig Setting")
-	fmt.Println("  Script          : " + sconfig.Script)
-	fmt.Println("  MaintenanceFile : " + sconfig.MaintenanceFile)
-	fmt.Println("  CheckInterval   : " + sconfig.Interval)
-	fmt.Println("  CommandTimeout  : " + sconfig.Timeout)
-	fmt.Println("")
+	ScriptConfig Setting
+	  Script          : %s
+	  MaintenanceFile : %s
+	  CheckInterval   : %s
+	  CommandTimeout  : %s
+	`
+	startMessage := fmt.Sprintf(startMessageTemplate,
+		*cmd_arg.GlobalConfigFile, *cmd_arg.ScriptConfigFile,
+		gconfig.Port, gconfig.URLPath,
+		sconfig.Script, sconfig.MaintenanceFile, sconfig.Interval, sconfig.Timeout,
+	)
+	logger.Debug(startMessage)
 
 	ctx, done := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL)
 	defer done()
 
 	eg, gctx := errgroup.WithContext(ctx)
 
-	// todo: from config
-	l := &lumberjack.Logger{Filename: "healthd.log", MaxSize: 100, // megabytes
-		MaxBackups: 3,
-		MaxAge:     7, //days
-	}
-	log.SetOutput(l)
-
-	// signal channel for SIGHUP
-	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, syscall.SIGHUP)
-	// start log roate goroutine
-	eg.Go(func() error {
-		for {
-			select {
-			case <-sig:
-				log.Println("log rotate")
-				if err := l.Rotate(); err != nil {
-					fmt.Printf("%v", err)
-				}
-			case <-gctx.Done():
-				if !errors.Is(gctx.Err(), context.Canceled) {
-					return gctx.Err()
-				}
-				return nil
-			}
-		}
-	})
-
 	// domain
 	d := domain.NewStatus()
 	// cmd exec repository
-	r, err := infrastructure.NewExecCmdRepository(sconfig.MaintenanceFile, sconfig.Script, sconfig.Timeout)
+	r, err := infrastructure.NewExecCmdRepository(sconfig.MaintenanceFile, sconfig.Script, sconfig.Timeout, logger)
 	if err != nil {
-		fmt.Print(err)
+		logger.Error(err.Error())
 		os.Exit(1)
 	}
 	// usecase for status
@@ -123,19 +106,20 @@ func main() {
 
 	// Statusを返却するHttpServerインスタンス生成
 	apiServer, err := presentation.NewAPIServer(
+		logger,
 		gconfig.URLPath,
 		gconfig.Port,
 		presentation.NewHandler(usecase, gconfig.RetSuccess, gconfig.RetFailed),
 	)
 	if err != nil {
-		fmt.Print(err)
+		logger.Error(err.Error())
 		os.Exit(1)
 	}
 
 	// start httServer goroutine
 	eg.Go(func() error {
-		log.Println("HttpServer start")
-		fmt.Println("exec curl from other console:  `curl localhost" + gconfig.Port + gconfig.URLPath + "`")
+		logger.Info("HttpServer start")
+		logger.Info(fmt.Sprintf("exec curl from other console:  `curl localhost" + gconfig.Port + gconfig.URLPath + "`"))
 		if err := apiServer.ListenAndServe(); err != nil {
 			if !errors.Is(err, http.ErrServerClosed) {
 				return err
@@ -163,10 +147,10 @@ func main() {
 		return nil
 	})
 
-	fmt.Println("all component started")
+	logger.Info("all component started")
 
 	if err := eg.Wait(); err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("exit healthd")
+	logger.Info("exit healthd")
 }

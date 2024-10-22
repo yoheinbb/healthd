@@ -1,7 +1,9 @@
 package infrastructure
 
 import (
+	"fmt"
 	"log"
+	"log/slog"
 	"os"
 	"time"
 
@@ -13,9 +15,10 @@ type ExecCmdRepository struct {
 	maintenanceFile string
 	script          string
 	timeout         time.Duration
+	logger          *slog.Logger
 }
 
-func NewExecCmdRepository(maintenanceFile, script, timeout string) (*ExecCmdRepository, error) {
+func NewExecCmdRepository(maintenanceFile, script, timeout string, logger *slog.Logger) (*ExecCmdRepository, error) {
 
 	ttimeout, err := time.ParseDuration(timeout)
 	if err != nil {
@@ -26,6 +29,7 @@ func NewExecCmdRepository(maintenanceFile, script, timeout string) (*ExecCmdRepo
 		maintenanceFile: maintenanceFile,
 		script:          script,
 		timeout:         ttimeout,
+		logger:          logger,
 	}, nil
 }
 
@@ -47,8 +51,8 @@ func (ecr *ExecCmdRepository) UpdateStatus() error {
 	}
 	ecr.statusCode = statusCode
 
-	// fmt.Printf("exit code : %d, script path : %s\n", statusCode, ecs.Script)
-	// fmt.Printf("status    : %s\n", ecs.Status.GetStatus())
+	ecr.logger.Debug(fmt.Sprintf("exit code : %d, script path : %s", statusCode, ecr.script))
+	ecr.logger.Debug(fmt.Sprintf("status    : %d", ecr.statusCode))
 	return nil
 }
 
