@@ -24,4 +24,4 @@ lint:
 
 .PHONY: run-local
 run-local:
-	go run main.go -global-config configs/conf/global.json -script-config configs/conf/script.json
+	go run main.go -global-config configs/conf/global.json -script-config configs/conf/script.json -v

@@ -42,14 +42,10 @@ enter-maintenance:
 exit-maintenance:
 	docker exec healthd-success rm /tmp/maintenance
 
-.PHONY: sighup-healthd
-sighup-healthd:
-	docker exec healthd-success kill -HUP 1
-
 .PHONY: count-healthd-log
 count-healthd-log:
 	docker exec healthd-success ls | grep healthd.*log | wc -l | tr -d ' '
 
-.PHONY: cat-healthd-log
-cat-healthd-log:
-	docker exec healthd-timeout cat healthd.log
+.PHONY: show-healthd-log
+show-healthd-log:
+	docker logs healthd-timeout

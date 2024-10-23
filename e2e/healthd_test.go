@@ -116,21 +116,6 @@ var _ = Describe("healthdのe2eテスト", Serial, func() {
 			Expect(err).ShouldNot(HaveOccurred())
 			Expect(ret.Result).Should(Equal("SUCCESS"))
 		})
-		It("SIGHUPでログローテートされる", func() {
-			ctx := context.Background()
-			_, err := exec.CommandContext(ctx,
-				"make", "sighup-healthd").CombinedOutput()
-			Expect(err).ShouldNot(HaveOccurred())
-			time.Sleep(1 * time.Second)
-
-			byteAll, err := exec.CommandContext(ctx,
-				"make", "-s", "count-healthd-log").CombinedOutput()
-			Expect(err).ShouldNot(HaveOccurred())
-			time.Sleep(1 * time.Second)
-
-			Expect(string(byteAll)).Should(Equal("2\n"))
-		})
-
 	})
 	It("scriptの終了コードが0以外の場合、失敗になる", func() {
 		requestURL := "http://localhost:8081/healthcheck"
@@ -160,7 +145,7 @@ var _ = Describe("healthdのe2eテスト", Serial, func() {
 
 		time.Sleep(2 * time.Second)
 		byteAll, err := exec.CommandContext(ctx,
-			"make", "-s", "cat-healthd-log").CombinedOutput()
+			"make", "-s", "show-healthd-log").CombinedOutput()
 		Expect(err).ShouldNot(HaveOccurred())
 
 		Expect(string(byteAll)).Should(ContainSubstring("timeout!! kill process"))
