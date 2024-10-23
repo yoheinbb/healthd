@@ -23,22 +23,19 @@ import (
 
 func main() {
 
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	args := util.ReadCommandArgs()
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+		Level: args.LogLevel,
+	}))
 
-	logger.Info("## Get Args ##")
-	cmd_arg := util.ReadCommandArg()
-
-	logger = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: cmd_arg.LogLevel}))
-	slog.SetDefault(logger)
-
-	logger.Info(fmt.Sprintf("## Read Global Config %s  ##\n", *cmd_arg.GlobalConfigFile))
-	gconfig, err := util.NewGlobalConfig(*cmd_arg.GlobalConfigFile)
+	logger.Info(fmt.Sprintf("## Read Global Config %s  ##\n", *args.GlobalConfigFile))
+	gconfig, err := util.NewGlobalConfig(*args.GlobalConfigFile)
 	if err != nil {
 		logger.Error(err.Error())
 		os.Exit(1)
 	}
-	logger.Info(fmt.Sprintf("## Read Script Config %s  ##\n", *cmd_arg.ScriptConfigFile))
-	sconfig, err := util.NewScriptConfig(*cmd_arg.ScriptConfigFile)
+	logger.Info(fmt.Sprintf("## Read Script Config %s  ##\n", *args.ScriptConfigFile))
+	sconfig, err := util.NewScriptConfig(*args.ScriptConfigFile)
 	if err != nil {
 		logger.Error(err.Error())
 		os.Exit(1)
@@ -63,7 +60,7 @@ func main() {
 	  CommandTimeout  : %s
 	`
 	startMessage := fmt.Sprintf(startMessageTemplate,
-		*cmd_arg.GlobalConfigFile, *cmd_arg.ScriptConfigFile,
+		*args.GlobalConfigFile, *args.ScriptConfigFile,
 		gconfig.Port, gconfig.URLPath,
 		sconfig.Script, sconfig.MaintenanceFile, sconfig.Interval, sconfig.Timeout,
 	)
