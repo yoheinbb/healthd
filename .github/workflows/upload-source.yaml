@@ -1,3 +1,4 @@
+name: upload
 on: [push]
 jobs:
   release:
