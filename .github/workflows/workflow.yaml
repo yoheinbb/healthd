@@ -34,9 +34,10 @@ jobs:
             prerelease: false
 
   build-rpm:
+    runs-on: ubuntu-latest
     steps:
       - name: build RPM package
         id: rpm_build
         uses: naveenrajm7/rpmbuild@master
         with:
-            spec_file: "build/package/rpm/healthd.spec"
+            spec_file: "build/package/rpm/healthd.spec
