@@ -11,7 +11,7 @@ jobs:
           tag: ${{ github.ref_name }}
         run: |
           if gh release view $tag; then
-            gh release delete "$tag"
+            gh release delete -y "$tag"
           fi
           gh release create "$tag" \
               --repo="$GITHUB_REPOSITORY" \
