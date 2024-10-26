@@ -1,6 +1,6 @@
 .PHONY: build
 build: 
-	CGO_ENABLED=0 go build -v -o build/healthd
+	CGO_ENABLED=0 go build -v -o healthd
 
 .PHONY: image
 image:
