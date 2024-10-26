@@ -2,7 +2,7 @@ name: upload
 on: [push]
 jobs:
   release:
-    name: Release pushed tag2
+    name: Release pushed tag3
     runs-on: ubuntu-latest
     steps:
       - name: Create release
