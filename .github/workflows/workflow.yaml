@@ -34,7 +34,6 @@ jobs:
             prerelease: false
 
   build-rpm:
-    runs-on: ubuntu-latest
     steps:
       - name: build RPM package
         id: rpm_build
