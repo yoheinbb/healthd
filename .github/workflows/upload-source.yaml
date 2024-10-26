@@ -3,14 +3,16 @@ on: [push]
 jobs:
   release:
     name: Release pushed tag2
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - name: Create release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ github.ref_name }}
         run: |
-          echo "test"
+          if gh release view $tag; then
+            gh release create "$tag"
+          fi
           gh release create "$tag" \
               --repo="$GITHUB_REPOSITORY" \
               --title="${tag#v}" \
