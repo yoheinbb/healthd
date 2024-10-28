@@ -11,8 +11,15 @@ jobs:
           tag: ${{ github.ref_name }}
         run: |
           if ! gh release view $tag; then
+            echo "aaaaaaaaaaa"
             gh release create "$tag" \
                 --repo="$GITHUB_REPOSITORY" \
                 --title="${tag#v}"
           fi
-
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Run rpmbuild on RPM spec to produce package
+        id: rpm
+        uses: naveenrajm7/rpmbuild@master
+        with:
+          spec_file: build/package/rpm/healthd.spec
