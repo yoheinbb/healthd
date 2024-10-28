@@ -18,6 +18,9 @@ jobs:
           fi
       - name: Checkout repository
         uses: actions/checkout@v2
+      - name: test
+        run: |
+          echo "aaa" > /root/aaaa
       - name: bbbb
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
