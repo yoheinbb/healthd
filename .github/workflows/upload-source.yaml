@@ -12,9 +12,9 @@ jobs:
         run: |
           if ! gh release view test; then
             echo "aaaaaaaaaaa"
-            gh release create test \
-                --repo="$GITHUB_REPOSITORY" \
-                --title="${tag#v}"
+            #gh release create test \
+            #    --repo="$GITHUB_REPOSITORY" \
+            #    --title="${tag#v}"
           fi
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -23,5 +23,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ github.ref_name }}
         run: |
-          sudo rpmbuild -ba build/package/rpm/healthd.spec
+          rpmbuild -ba build/package/rpm/healthd.spec
 

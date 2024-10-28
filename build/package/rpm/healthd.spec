@@ -5,7 +5,8 @@ Summary:        rest api server with cmd execute
 
 License:        GPLv3
 %undefine _disable_source_fetch
-Source0:        https://github.com/yoheinbb/%{name}/archive/refs/tags/v%{version}.tar.gz
+#Source0:        https://github.com/yoheinbb/%{name}/archive/refs/tags/v%{version}.tar.gz
+Source0:        https://github.com/yoheinbb/healthd/archive/refs/tags/test.tar.gz
 
 BuildRequires:  golang
 
