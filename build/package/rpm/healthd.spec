@@ -8,7 +8,7 @@ License:        GPLv3
 #Source0:        https://github.com/yoheinbb/%{name}/archive/refs/tags/v%{version}.tar.gz
 Source0:        https://github.com/yoheinbb/healthd/archive/refs/tags/test.tar.gz
 
-BuildRequires:  golang
+#BuildRequires:  golang
 
 Provides:       %{name} = %{version}
 
