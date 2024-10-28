@@ -10,9 +10,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ github.ref_name }}
         run: |
-          if ! gh release view $tag; then
+          if ! gh release view test; then
             echo "aaaaaaaaaaa"
-            gh release create "$tag" \
+            gh release create test \
                 --repo="$GITHUB_REPOSITORY" \
                 --title="${tag#v}"
           fi
