@@ -13,6 +13,6 @@ jobs:
           if ! gh release view $tag; then
             gh release create "$tag" \
                 --repo="$GITHUB_REPOSITORY" \
-                --title="${tag#v}" \
-                --generate-notes
+                --title="${tag#v}"
           fi
+
