@@ -20,11 +20,11 @@ jobs:
         uses: actions/checkout@v2
       - name: test
         run: |
-          sudo echo "aaa" > /root/aaaa
+          sudo echo "aaa" > /tmp/aaaa
       - name: bbbb
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ github.ref_name }}
         run: |
-          sudo rpmbuild -ba build/package/rpm/healthd.spec
+          rpmbuild --define "_topdir /tmp/" -ba build/package/rpm/healthd.spec
 
