@@ -21,9 +21,16 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+// version is set at build time via -ldflags.
+var version = "dev"
+
 func main() {
 
 	args := util.ReadCommandArgs()
+	if args.ShowVersion {
+		fmt.Println(version)
+		os.Exit(0)
+	}
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		Level: args.LogLevel,
 	}))
