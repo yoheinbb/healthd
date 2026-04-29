@@ -5,6 +5,7 @@ import (
 	"errors"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"time"
 )
@@ -32,11 +33,11 @@ func NewGlobalConfig(config_path string) (*GlobalConfig, error) {
 func (conf *GlobalConfig) validateConfig() error {
 	var check bool
 	// format check
-	check, _ = regexp.MatchString(`^:[0-9]{2,5}`, conf.Port)
+	check, _ = regexp.MatchString(`^:[0-9]{2,5}$`, conf.Port)
 	if !check {
 		return errors.New("port format error   " + conf.Port)
 	}
-	check, _ = regexp.MatchString(`^/{1}[a-z]`, conf.URLPath)
+	check, _ = regexp.MatchString(`^/[a-zA-Z0-9_/\-]+$`, conf.URLPath)
 	if !check {
 		return errors.New("urlpath format error   " + conf.URLPath)
 	}
@@ -110,7 +111,8 @@ func (conf *ScriptConfig) setDefaultConfig() IConfig {
 // Json Configの読み込み、Config構造体への展開
 func newConfig(config_path string, config IConfig) (IConfig, error) {
 	// file exist check
-	file, err := os.ReadFile(config_path)
+	cleanPath := filepath.Clean(config_path)
+	file, err := os.ReadFile(cleanPath)
 	if err != nil {
 		return nil, err
 	}
