@@ -9,9 +9,8 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"strconv"
-	"strings"
 	"syscall"
+	"time"
 
 	"github.com/yoheinbb/healthd/internal/domain"
 	"github.com/yoheinbb/healthd/internal/infrastructure"
@@ -90,10 +89,11 @@ func main() {
 	usecase := usecase.NewStatus(d, r)
 	// start getStatus goroutine
 	eg.Go(func() error {
-		interval, err := strconv.Atoi(strings.ReplaceAll(sconfig.Interval, "s", ""))
+		intervalDur, err := time.ParseDuration(sconfig.Interval)
 		if err != nil {
 			return err
 		}
+		interval := int(intervalDur.Seconds())
 
 		if err := usecase.StartStatusUpdater(gctx, interval); err != nil {
 			if !errors.Is(err, context.Canceled) {
@@ -145,7 +145,9 @@ func main() {
 			return gctx.Err()
 		}
 
-		if err := apiServer.Shutdown(context.Background()); err != nil {
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		if err := apiServer.Shutdown(shutdownCtx); err != nil {
 			return err
 		}
 		return nil
