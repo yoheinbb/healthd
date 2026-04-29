@@ -83,7 +83,7 @@ func main() {
 	usecase := usecase.NewStatus(d, r)
 	// start getStatus goroutine
 	eg.Go(func() error {
-		interval, err := (strconv.Atoi(strings.Replace(sconfig.Interval, "s", "", -1)))
+		interval, err := strconv.Atoi(strings.ReplaceAll(sconfig.Interval, "s", ""))
 		if err != nil {
 			return err
 		}
