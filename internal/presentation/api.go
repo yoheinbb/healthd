@@ -13,10 +13,15 @@ func NewAPIServer(logger *slog.Logger, urlPath, port string, handler *Handler) (
 	gin.SetMode(gin.ReleaseMode)
 	engine := gin.New()
 	engine.Use(ginLogFormat(logger))
+	engine.Use(gin.Recovery())
 	engine.GET(urlPath, handler.HealthdHandler)
 	server := &http.Server{
-		Addr:    port,
-		Handler: engine,
+		Addr:              port,
+		Handler:           engine,
+		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       10 * time.Second,
+		WriteTimeout:      10 * time.Second,
+		IdleTimeout:       120 * time.Second,
 	}
 
 	return server, nil
