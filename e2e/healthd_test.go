@@ -62,7 +62,7 @@ func getHealthcheck(ctx context.Context, requestURL string) ([]byte, error) {
 		return nil, err
 	}
 	Expect(resp.StatusCode).To(Equal(http.StatusOK))
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	body, err := io.ReadAll(resp.Body)
 	Expect(err).ShouldNot(HaveOccurred())
 	if err != nil {
